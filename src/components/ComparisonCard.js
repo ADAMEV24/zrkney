@@ -120,20 +120,23 @@ export default function ComparisonCard({ profiles, transactions }) {
   const diff = playerA.usd - playerB.usd;
   const tied = diff < 0.005;
 
-  // Dynamic battle message
+  // Dynamic financial summary message
   let battleMsg = '';
   let battleColor = '#f59e0b';
   if (tied) {
-    battleMsg = '⚖️ تعادل تام! الحساب متوازن بالكامل';
+    battleMsg = `⚖️ الحساب متوازن — كلاهما دفع مبالغ متساوية`;
     battleColor = '#10b981';
   } else if (diff < 5) {
-    battleMsg = `🔥 ${playerA.name} يتقدم بفارق ضئيل $${diff.toFixed(2)}!`;
+    battleMsg = `${playerA.name} دفع أكثر بفارق بسيط $${diff.toFixed(2)}`;
+    battleColor = '#06b6d4';
   } else if (diff < 20) {
-    battleMsg = `⚡ ${playerA.name} يتفوق بـ $${diff.toFixed(2)} دولار!`;
+    battleMsg = `${playerA.name} دفع أكثر بمقدار $${diff.toFixed(2)} دولار`;
+    battleColor = '#06b6d4';
   } else if (diff < 100) {
-    battleMsg = `🚀 ${playerA.name} يتصدر المشهد بفارق $${diff.toFixed(2)}!`;
+    battleMsg = `${playerA.name} تصدّر المدفوعات بفارق $${diff.toFixed(2)} دولار`;
+    battleColor = '#f59e0b';
   } else {
-    battleMsg = `👑 ${playerA.name} يسحق بفارق هائل $${diff.toFixed(2)} دولار!`;
+    battleMsg = `${playerA.name} دفع أكثر بفارق كبير يبلغ $${diff.toFixed(2)} دولار`;
     battleColor = '#7c3aed';
   }
 
