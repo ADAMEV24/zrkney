@@ -4,16 +4,19 @@ export const metadata = {
   title: 'زركني — المنصة المالية الشفافة',
   description: 'تتبع مدفوعاتك المشتركة بشفافية ومصداقية. ما يُكتب لا يُعدَّل ولا يُحذف.',
   keywords: 'مالية, مدفوعات, شفافية, حسابات مشتركة',
+};
+
+export const viewport = {
   themeColor: '#7c3aed',
+  colorScheme: 'dark',
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#7c3aed" />
-        <meta name="color-scheme" content="dark" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
