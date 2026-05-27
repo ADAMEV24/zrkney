@@ -144,36 +144,6 @@ export default function ComparisonCard({ profiles, transactions }) {
     <div className="glass-panel comparison-card animate-fade-in"
       style={{ padding: '0', marginBottom: '2rem', overflow: 'hidden' }}>
 
-      {/* ── Header ── */}
-      <div style={{
-        padding: '1.2rem 2rem',
-        background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(6,182,212,0.08) 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.8rem',
-      }}>
-        <div style={{
-          fontSize: '1.5rem',
-          filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))',
-        }}>⚔️</div>
-        <div style={{
-          fontSize: '1.05rem',
-          fontWeight: '900',
-          letterSpacing: '0.05em',
-          background: 'linear-gradient(135deg, #fff 0%, var(--accent-light) 60%, var(--accent) 100%)',
-          WebkitBackgroundClip: 'text',
-          color: 'transparent',
-        }}>
-          المواجهة الكبرى
-        </div>
-        <div style={{
-          fontSize: '1.5rem',
-          filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.6))',
-        }}>⚔️</div>
-      </div>
-
       {/* ── Battle Arena ── */}
       <div style={{
         padding: '1.5rem 2rem',
