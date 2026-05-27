@@ -880,12 +880,10 @@ export default function Dashboard({ session }) {
         <div className="modal-overlay">
           <div className="glass-panel animate-scale-in" style={{
             padding: '2.2rem',
-            width: '90%',
+            width: '100%',
             maxWidth: '500px',
             border: '1px solid rgba(124,58,237,0.22)',
             boxShadow: '0 32px 80px rgba(0,0,0,0.55), 0 0 60px rgba(124,58,237,0.06)',
-            maxHeight: '90vh',
-            overflowY: 'auto',
           }}>
             {/* Modal Header */}
             <div style={{ textAlign: 'center', marginBottom: '1.8rem' }}>

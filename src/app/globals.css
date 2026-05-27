@@ -343,10 +343,12 @@ button:active { transform: scale(0.95); }
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(14px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.25s ease forwards;
+  overflow-y: auto;
+  padding: 2rem 1rem;
 }
 
 /* ====================================================
