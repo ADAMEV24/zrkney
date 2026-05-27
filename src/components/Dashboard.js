@@ -116,32 +116,53 @@ export default function Dashboard({ session }) {
   const totalSYP_all = Math.max(Object.keys(profiles).reduce((a, id) => a + calcTotals(id).syp, 0), 0.01);
 
   /* ── Build Daily Chart ── */
-  const buildDailyChart = (cur) => {
-    const map = {};
-    filteredTrans.filter(t => t.currency === cur).forEach(t => {
-      map[t.payment_date] = (map[t.payment_date] || 0) + Number(t.amount);
-    });
-    const dates  = Object.keys(map).sort();
-    const values = dates.map(d => map[d]);
-    const maxV   = Math.max(...values, 1);
+  const buildDailyChartMulti = (cur) => {
+    const userIds = Object.keys(profiles);
+    // Collect all unique dates across all users
+    const allDates = [...new Set(
+      filteredTrans.filter(t => t.currency === cur).map(t => t.payment_date)
+    )].sort();
+
+    if (allDates.length === 0) return { allDates, userSeries: [], maxV: 1 };
+
     const W = 500, H = 160;
-    const pts = dates.map((d, i) => ({
-      x: dates.length < 2 ? W / 2 : (i / (dates.length - 1)) * W,
-      y: H - (values[i] / maxV) * H,
-      v: values[i], d,
-    }));
-    let line = '', area = '';
-    if (pts.length > 0) {
-      line = `M ${pts[0].x} ${pts[0].y}`;
-      area = `M ${pts[0].x} ${H} L ${pts[0].x} ${pts[0].y}`;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const cx = pts[i].x + (pts[i + 1].x - pts[i].x) / 2;
-        const seg = ` C ${cx} ${pts[i].y}, ${cx} ${pts[i + 1].y}, ${pts[i + 1].x} ${pts[i + 1].y}`;
-        line += seg; area += seg;
+
+    // Build per-user daily totals
+    const userSeries = userIds.map((uid, idx) => {
+      const map = {};
+      filteredTrans
+        .filter(t => t.payer_id === uid && t.currency === cur)
+        .forEach(t => { map[t.payment_date] = (map[t.payment_date] || 0) + Number(t.amount); });
+
+      const values = allDates.map(d => map[d] || 0);
+      return { uid, name: profiles[uid] || '؟', values, color: COLORS[idx % COLORS.length] };
+    }).filter(s => s.values.some(v => v > 0));
+
+    const maxV = Math.max(...userSeries.flatMap(s => s.values), 1);
+
+    // Build SVG path per user
+    const buildPath = (values) => {
+      const pts = allDates.map((d, i) => ({
+        x: allDates.length < 2 ? W / 2 : (i / (allDates.length - 1)) * W,
+        y: H - (values[i] / maxV) * H,
+        v: values[i], d,
+      }));
+      let line = '', area = '';
+      if (pts.length > 0) {
+        line = `M ${pts[0].x} ${pts[0].y}`;
+        area = `M ${pts[0].x} ${H} L ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const cx = pts[i].x + (pts[i + 1].x - pts[i].x) / 2;
+          const seg = ` C ${cx} ${pts[i].y}, ${cx} ${pts[i + 1].y}, ${pts[i + 1].x} ${pts[i + 1].y}`;
+          line += seg; area += seg;
+        }
+        area += ` L ${pts[pts.length - 1].x} ${H} Z`;
       }
-      area += ` L ${pts[pts.length - 1].x} ${H} Z`;
-    }
-    return { pts, line, area, maxV, dates, values };
+      return { pts, line, area };
+    };
+
+    const seriesWithPaths = userSeries.map(s => ({ ...s, ...buildPath(s.values) }));
+    return { allDates, userSeries: seriesWithPaths, maxV };
   };
 
   /* ── Submit Transaction ── */
@@ -370,18 +391,18 @@ export default function Dashboard({ session }) {
         </div>
       </div>
 
-      {/* ══ DAILY LINE CHART ══ */}
+      {/* ══ DAILY LINE CHART — per user ══ */}
       {(() => {
-        const { pts, line, area, maxV, dates } = buildDailyChart(chartCurrency);
-        const color = chartCurrency === 'USD' ? 'var(--success)' : 'var(--primary-light)';
-        const colorHex = chartCurrency === 'USD' ? '#10b981' : '#a78bfa';
+        const { allDates, userSeries, maxV } = buildDailyChartMulti(chartCurrency);
         const yTicks = [0, 0.25, 0.5, 0.75, 1].map(p => ({ pct: p, val: maxV * p }));
+        const hasData = userSeries.length > 0;
         return (
           <div className="glass-panel" style={{ padding: '1.8rem', marginBottom: '2rem', background: 'rgba(6,8,18,0.92)', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.6rem', flexWrap: 'wrap', gap: '0.8rem' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.4rem', flexWrap: 'wrap', gap: '0.8rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <TrendingUp size={18} color={colorHex} />
-                <span className="section-title">المساهمات اليومية</span>
+                <TrendingUp size={18} color="#7c3aed" />
+                <span className="section-title">المدفوعات اليومية</span>
               </div>
               <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(255,255,255,0.04)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.07)' }}>
                 {[['USD', '$ دولار'], ['SYP', 'ل.س ليرة']].map(([c, l]) => (
@@ -390,15 +411,28 @@ export default function Dashboard({ session }) {
               </div>
             </div>
 
-            {pts.length === 0 ? (
+            {/* Legend */}
+            {hasData && (
+              <div style={{ display: 'flex', gap: '1.2rem', marginBottom: '1.2rem', flexWrap: 'wrap' }}>
+                {userSeries.map(s => (
+                  <div key={s.uid} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <div style={{ width: '28px', height: '3px', borderRadius: '2px', background: s.color, boxShadow: `0 0 6px ${s.color}88` }} />
+                    <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', fontWeight: '700' }}>{s.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!hasData ? (
               <div style={{ height: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                 <div style={{ fontSize: '2rem', opacity: 0.18 }}>📉</div>
                 <div style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.85rem', fontWeight: '700' }}>
-                  لا توجد مساهمات {chartCurrency === 'USD' ? 'بالدولار' : 'بالليرة'} لهذه الفترة
+                  لا توجد مدفوعات {chartCurrency === 'USD' ? 'بالدولار' : 'بالليرة'} لهذه الفترة
                 </div>
               </div>
             ) : (
               <div style={{ position: 'relative', padding: '10px 10px 36px 52px' }}>
+                {/* Y-axis labels */}
                 <div style={{ position: 'absolute', left: 0, top: '10px', bottom: '36px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '48px', textAlign: 'left' }}>
                   {[...yTicks].reverse().map((t, i) => (
                     <span key={i} style={{ fontSize: '0.63rem', color: 'rgba(255,255,255,0.22)', fontWeight: '700' }}>
@@ -406,30 +440,53 @@ export default function Dashboard({ session }) {
                     </span>
                   ))}
                 </div>
+
                 <svg width="100%" viewBox="0 0 500 160" preserveAspectRatio="none" style={{ overflow: 'visible', display: 'block' }}>
                   <defs>
-                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={colorHex} stopOpacity="0.3" />
-                      <stop offset="100%" stopColor={colorHex} stopOpacity="0" />
-                    </linearGradient>
+                    {userSeries.map(s => (
+                      <linearGradient key={s.uid} id={`grad-${s.uid}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={s.color} stopOpacity="0.18" />
+                        <stop offset="100%" stopColor={s.color} stopOpacity="0" />
+                      </linearGradient>
+                    ))}
                   </defs>
+
+                  {/* Grid lines */}
                   {yTicks.map((t, i) => (
                     <line key={i} x1="0" y1={160 - t.pct * 160} x2="500" y2={160 - t.pct * 160}
                       stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="6 4" />
                   ))}
-                  {area && <path d={area} fill="url(#chartGrad)" />}
-                  {line && <path d={line} fill="none" stroke={colorHex} strokeWidth="8" strokeLinecap="round" opacity="0.06" />}
-                  {line && <path d={line} fill="none" stroke={colorHex} strokeWidth="2.2" strokeLinecap="round" />}
-                  {pts.map((p, i) => (
-                    <g key={i}>
-                      <circle cx={p.x} cy={p.y} r="7" fill={colorHex} opacity="0.1" />
-                      <circle cx={p.x} cy={p.y} r="3.5" fill={colorHex} opacity="0.5" />
-                      <circle cx={p.x} cy={p.y} r="2" fill={colorHex} stroke="rgba(6,8,18,0.95)" strokeWidth="1.5" />
+
+                  {/* Per-user area fills (draw first, behind lines) */}
+                  {userSeries.map(s => s.area && (
+                    <path key={`area-${s.uid}`} d={s.area} fill={`url(#grad-${s.uid})`} />
+                  ))}
+
+                  {/* Per-user lines */}
+                  {userSeries.map(s => s.line && (
+                    <g key={`line-${s.uid}`}>
+                      {/* Glow */}
+                      <path d={s.line} fill="none" stroke={s.color} strokeWidth="6" strokeLinecap="round" opacity="0.07" />
+                      {/* Main line */}
+                      <path d={s.line} fill="none" stroke={s.color} strokeWidth="2.2" strokeLinecap="round" />
                     </g>
                   ))}
+
+                  {/* Per-user dots */}
+                  {userSeries.map(s =>
+                    s.pts.map((p, i) => p.v > 0 && (
+                      <g key={`dot-${s.uid}-${i}`}>
+                        <circle cx={p.x} cy={p.y} r="6" fill={s.color} opacity="0.12" />
+                        <circle cx={p.x} cy={p.y} r="3" fill={s.color} opacity="0.7" />
+                        <circle cx={p.x} cy={p.y} r="1.8" fill={s.color} stroke="rgba(6,8,18,0.95)" strokeWidth="1.2" />
+                      </g>
+                    ))
+                  )}
                 </svg>
+
+                {/* X-axis labels */}
                 <div style={{ position: 'absolute', bottom: 0, left: '52px', right: '10px', display: 'flex', justifyContent: 'space-between' }}>
-                  {dates.map((d, i) => (
+                  {allDates.map((d, i) => (
                     <span key={i} style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.2)', fontWeight: '700', textAlign: 'center' }}>
                       {new Date(d).toLocaleDateString('ar-SY', { day: 'numeric', month: 'short' })}
                     </span>
