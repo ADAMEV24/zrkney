@@ -295,7 +295,7 @@ export default function Dashboard({ session }) {
       </div>
 
       {/* ══ COMPARISON CARD (always visible) ══ */}
-      <ComparisonCard profiles={profiles} transactions={transactions} />
+      <ComparisonCard profiles={profiles} transactions={filteredTrans} />
 
       {/* ══ STAT CARDS ══ */}
       <div style={{
