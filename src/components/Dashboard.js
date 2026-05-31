@@ -115,6 +115,21 @@ export default function Dashboard({ session }) {
   const totalUSD_all = Math.max(Object.keys(profiles).reduce((a, id) => a + calcTotals(id).usd, 0), 0.01);
   const totalSYP_all = Math.max(Object.keys(profiles).reduce((a, id) => a + calcTotals(id).syp, 0), 0.01);
 
+  /* ── Category Breakdown ── */
+  const categoryTotals = {};
+  filteredTrans.forEach(t => {
+    const cat = t.category || 'عام';
+    if (!categoryTotals[cat]) {
+      categoryTotals[cat] = { total: { usd: 0, syp: 0 }, users: {} };
+      Object.keys(profiles).forEach(uid => categoryTotals[cat].users[uid] = { usd: 0, syp: 0 });
+    }
+    const c = t.currency === 'USD' ? 'usd' : 'syp';
+    categoryTotals[cat].total[c] += Number(t.amount);
+    if (categoryTotals[cat].users[t.payer_id]) {
+      categoryTotals[cat].users[t.payer_id][c] += Number(t.amount);
+    }
+  });
+
   /* ── Build Daily Chart ── */
   const buildDailyChartMulti = (cur) => {
     const userIds = Object.keys(profiles);
@@ -390,6 +405,71 @@ export default function Dashboard({ session }) {
           </div>
         </div>
       </div>
+
+      {/* ══ CATEGORY BREAKDOWN ══ */}
+      {Object.keys(categoryTotals).length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
+            <span className="section-title">تفصيل التصنيفات</span>
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            gap: '1.2rem'
+          }}>
+            {Object.entries(categoryTotals).map(([cat, data], idx) => {
+              const color = COLORS[idx % COLORS.length];
+              return (
+                <div key={cat} className="glass-panel stat-card" style={{
+                  padding: '1.5rem',
+                  borderTop: `3px solid ${color}`,
+                  background: `linear-gradient(135deg, ${color}11 0%, transparent 65%)`,
+                }}>
+                  <div style={{
+                    fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: '800',
+                    textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}`, display: 'inline-block' }} />
+                    {cat}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '1.2rem' }}>
+                    <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'white', lineHeight: 1 }}>
+                      {data.total.usd.toFixed(2)} <span style={{fontSize:'0.65rem', color:color, fontWeight: '800'}}>USD</span>
+                    </div>
+                    {data.total.syp > 0 && (
+                      <div style={{ fontSize: '1rem', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>
+                        {data.total.syp.toLocaleString()} <span style={{fontSize:'0.6rem'}}>SYP</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ height: '1px', background: `linear-gradient(90deg, ${color}33, transparent)`, marginBottom: '1rem' }} />
+                  
+                  {/* Users breakdown */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {Object.entries(data.users).map(([uid, uData]) => {
+                       if (uData.usd === 0 && uData.syp === 0) return null;
+                       return (
+                         <div key={uid} style={{ 
+                           display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                           background: 'rgba(255,255,255,0.03)', padding: '0.5rem 0.8rem', borderRadius: '8px',
+                           border: '1px solid rgba(255,255,255,0.02)'
+                         }}>
+                           <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'rgba(255,255,255,0.85)' }}>{profiles[uid]}</span>
+                           <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+                              {uData.usd > 0 && <span style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white' }}>{uData.usd.toFixed(2)} <span style={{fontSize:'0.55rem', color:color}}>USD</span></span>}
+                              {uData.syp > 0 && <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'rgba(255,255,255,0.45)' }}>{uData.syp.toLocaleString()} <span style={{fontSize:'0.5rem'}}>SYP</span></span>}
+                           </div>
+                         </div>
+                       );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ══ DAILY LINE CHART — per user ══ */}
       {(() => {
