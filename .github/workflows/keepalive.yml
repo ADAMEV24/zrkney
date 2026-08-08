@@ -1,0 +1,20 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # يعمل كل 3 أيام عند منتصف الليل
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # يسمح بتشغيله يدوياً
+
+jobs:
+  ping-database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send API request to Supabase
+        run: |
+          curl -s -S -H "apikey: ${{ secrets.SUPABASE_ANON_KEY || env.ANON_KEY }}" \
+               -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY || env.ANON_KEY }}" \
+               "https://yygnqixfgrjpbuwdcwjc.supabase.co/rest/v1/profiles?limit=1"
+        env:
+          # هذا المفتاح عام (Anon Key) ولا مشكلة بوجوده هنا، ولكن يمكن وضعه في أسرار المستودع أيضاً
+          ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Z25xaXhmZ3JqcGJ1d2Rjd2pjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MzAwNjgsImV4cCI6MjA5MzQwNjA2OH0.mdTGn5xTNW-WkAuXI9pl7PcaIafWbNs2dtqvu1jloeM"
