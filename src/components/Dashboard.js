@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Plus, LogOut, Search, Users, TrendingUp, Calendar, BarChart2, Zap } from 'lucide-react';
 import ComparisonCard from './ComparisonCard';
+import CreavatexDashboard from './CreavatexDashboard';
 
 const COLORS = ['#7c3aed', '#06b6d4', '#f59e0b', '#10b981', '#a78bfa', '#fb923c'];
 const cats = ['عام', 'طعام', 'فواتير', 'إيجار', 'طوارئ', 'ترفيه', 'نقل'];
@@ -55,6 +56,8 @@ export default function Dashboard({ session }) {
   const [searchQuery, setSearchQuery]   = useState('');
   const [showCompare, setShowCompare]   = useState(false);
   const [chartCurrency, setChartCurrency] = useState('USD');
+  const isCreavatexUser = session?.user?.email?.toLowerCase() === 'hassandweedary@gmail.com';
+  const [activeTab, setActiveTab] = useState('zrkney');
 
   useEffect(() => {
     fetchData();
@@ -202,6 +205,73 @@ export default function Dashboard({ session }) {
   return (
     <div className="container animate-fade-in" style={{ direction: 'rtl' }}>
 
+      {/* ══ TOP SWITCHER (for hassandweedary@gmail.com) ══ */}
+      {isCreavatexUser && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          marginBottom: '1.8rem',
+          padding: '5px',
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255,255,255,0.06)',
+          width: 'fit-content',
+        }}>
+          <button
+            onClick={() => setActiveTab('zrkney')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '9px 18px',
+              borderRadius: '12px',
+              border: activeTab === 'zrkney' ? '1px solid rgba(124,58,237,0.4)' : '1px solid transparent',
+              background: activeTab === 'zrkney' ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(6,182,212,0.15))' : 'transparent',
+              color: activeTab === 'zrkney' ? '#fff' : 'rgba(255,255,255,0.45)',
+              fontFamily: 'Cairo, sans-serif',
+              fontWeight: '800',
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              transition: 'all 0.25s',
+            }}
+          >
+            <span>💎</span> زركني — الصندوق المشترك
+          </button>
+          <button
+            onClick={() => setActiveTab('creavatex')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '9px 18px',
+              borderRadius: '12px',
+              border: activeTab === 'creavatex' ? '1px solid rgba(6,182,212,0.4)' : '1px solid transparent',
+              background: activeTab === 'creavatex' ? 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(124,58,237,0.2))' : 'transparent',
+              color: activeTab === 'creavatex' ? '#fff' : 'rgba(255,255,255,0.45)',
+              fontFamily: 'Cairo, sans-serif',
+              fontWeight: '800',
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              transition: 'all 0.25s',
+            }}
+          >
+            <span>🏢</span> شركة CREAVATEX
+            <span style={{
+              fontSize: '0.62rem',
+              background: 'rgba(6,182,212,0.18)',
+              color: '#06b6d4',
+              padding: '2px 8px',
+              borderRadius: '8px',
+              border: '1px solid rgba(6,182,212,0.3)',
+              fontWeight: '900',
+            }}>
+              خاص
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* ══ HEADER ══ */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -219,74 +289,93 @@ export default function Dashboard({ session }) {
             lineHeight: 1.1,
             letterSpacing: '-0.04em',
           }}>
-            زركني
+            {activeTab === 'creavatex' ? 'CREAVATEX' : 'زركني'}
           </h1>
           <LiveClock />
         </div>
 
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <Search size={14} style={{
-              position: 'absolute', top: '50%', right: '12px',
-              transform: 'translateY(-50%)',
-              color: 'rgba(255,255,255,0.28)',
-              pointerEvents: 'none',
-            }} />
-            <input
-              type="text"
-              placeholder="بحث..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="input-field"
-              style={{ width: '170px', paddingRight: '38px', paddingLeft: '12px', fontSize: '0.85rem', padding: '10px 38px 10px 12px' }}
-            />
-          </div>
+          {activeTab === 'zrkney' ? (
+            <>
+              {/* Search */}
+              <div style={{ position: 'relative' }}>
+                <Search size={14} style={{
+                  position: 'absolute', top: '50%', right: '12px',
+                  transform: 'translateY(-50%)',
+                  color: 'rgba(255,255,255,0.28)',
+                  pointerEvents: 'none',
+                }} />
+                <input
+                  type="text"
+                  placeholder="بحث..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="input-field"
+                  style={{ width: '170px', paddingRight: '38px', paddingLeft: '12px', fontSize: '0.85rem', padding: '10px 38px 10px 12px' }}
+                />
+              </div>
 
-          {/* Time Filter */}
-          <div style={{
-            background: 'rgba(255,255,255,0.04)',
-            padding: '4px',
-            borderRadius: '12px',
-            display: 'flex',
-            border: '1px solid rgba(255,255,255,0.07)',
-          }}>
-            {[['all', 'الكل'], ['month', 'شهر'], ['week', 'أسبوع']].map(([f, l]) => (
+              {/* Time Filter */}
+              <div style={{
+                background: 'rgba(255,255,255,0.04)',
+                padding: '4px',
+                borderRadius: '12px',
+                display: 'flex',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}>
+                {[['all', 'الكل'], ['month', 'شهر'], ['week', 'أسبوع']].map(([f, l]) => (
+                  <button
+                    key={f}
+                    onClick={() => setTimeFilter(f)}
+                    className={`filter-tab${timeFilter === f ? ' active' : ''}`}
+                  >{l}</button>
+                ))}
+              </div>
+
+              {/* Compare Toggle */}
               <button
-                key={f}
-                onClick={() => setTimeFilter(f)}
-                className={`filter-tab${timeFilter === f ? ' active' : ''}`}
-              >{l}</button>
-            ))}
-          </div>
+                onClick={() => setShowCompare(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.45rem',
+                  padding: '10px 15px',
+                  borderRadius: '12px',
+                  border: `1px solid ${showCompare ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                  background: showCompare ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.04)',
+                  color: showCompare ? 'var(--accent)' : 'rgba(255,255,255,0.5)',
+                  fontFamily: 'Cairo, sans-serif',
+                  fontWeight: '700',
+                  fontSize: '0.83rem',
+                  transition: 'all 0.25s',
+                }}
+              >
+                <BarChart2 size={15} /> مقارنة
+              </button>
 
-          {/* Compare Toggle */}
-          <button
-            onClick={() => setShowCompare(v => !v)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.45rem',
-              padding: '10px 15px',
+              {/* Add button */}
+              <button
+                className="btn-primary"
+                onClick={() => setShowModal(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '10px 18px' }}
+              >
+                <Plus size={16} /> إضافة
+              </button>
+            </>
+          ) : (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '8px 14px',
               borderRadius: '12px',
-              border: `1px solid ${showCompare ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.08)'}`,
-              background: showCompare ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.04)',
-              color: showCompare ? 'var(--accent)' : 'rgba(255,255,255,0.5)',
-              fontFamily: 'Cairo, sans-serif',
+              background: 'rgba(6,182,212,0.08)',
+              border: '1px solid rgba(6,182,212,0.2)',
+              color: '#06b6d4',
+              fontSize: '0.78rem',
               fontWeight: '700',
-              fontSize: '0.83rem',
-              transition: 'all 0.25s',
-            }}
-          >
-            <BarChart2 size={15} /> مقارنة
-          </button>
-
-          {/* Add button */}
-          <button
-            className="btn-primary"
-            onClick={() => setShowModal(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '10px 18px' }}
-          >
-            <Plus size={16} /> إضافة
-          </button>
+            }}>
+              <span>👤</span> {session?.user?.email}
+            </div>
+          )}
 
           {/* Sign Out */}
           <button
@@ -309,8 +398,12 @@ export default function Dashboard({ session }) {
         </div>
       </div>
 
-      {/* ══ COMPARISON CARD (always visible) ══ */}
-      <ComparisonCard profiles={profiles} transactions={filteredTrans} />
+      {activeTab === 'creavatex' ? (
+        <CreavatexDashboard session={session} />
+      ) : (
+        <>
+          {/* ══ COMPARISON CARD (always visible) ══ */}
+          <ComparisonCard profiles={profiles} transactions={filteredTrans} />
 
       {/* ══ STAT CARDS ══ */}
       <div style={{
@@ -1011,6 +1104,8 @@ export default function Dashboard({ session }) {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* ══ MODAL ══ */}
       {showModal && (
