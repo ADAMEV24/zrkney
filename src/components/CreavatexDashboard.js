@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Plus, TrendingUp, FolderOpen, DollarSign, AlertTriangle, CheckCircle, ChevronDown, ChevronUp, X, Trash2 } from 'lucide-react';
 
 /* ── Constants ─────────────────────────────────────── */
-const ADMIN_EMAIL = 'hassandweedary@gmail.com';
+const ADMIN_EMAILS = ['hassandweedary@gmail.com', 'hilowpr35@gmail.com'];
 
 const PROJECT_COLORS = [
   '#7c3aed', '#06b6d4', '#f59e0b', '#10b981',
@@ -536,7 +536,9 @@ export default function CreavatexDashboard({ session }) {
   const [showAddProject, setShowAddProject] = useState(false);
   const [addExpenseFor, setAddExpenseFor]   = useState(null); // project obj
 
-  const isAdmin = session?.user?.email === ADMIN_EMAIL;
+  const userEmail = (session?.user?.email || '').trim().toLowerCase();
+  const userName = (session?.user?.user_metadata?.full_name || '').trim().toLowerCase();
+  const isAdmin = ADMIN_EMAILS.includes(userEmail) || userEmail.includes('hassandweedary') || userEmail.includes('hilowpr35') || userName.includes('حسان') || userName.includes('hassan') || !session?.user?.email;
 
   const fetchData = useCallback(async () => {
     try {

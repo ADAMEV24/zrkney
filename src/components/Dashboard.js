@@ -205,17 +205,23 @@ export default function Dashboard({ session }) {
   return (
     <div className="container animate-fade-in" style={{ direction: 'rtl' }}>
 
-      {/* ══ TOP SWITCHER (for hassandweedary@gmail.com) ══ */}
-      {isCreavatexUser && (
+      {/* ══ TOP SWITCHER ══ */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '0.8rem',
+        marginBottom: '2rem',
+        flexWrap: 'wrap',
+      }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.6rem',
-          marginBottom: '1.8rem',
           padding: '5px',
           background: 'rgba(255,255,255,0.03)',
           borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.07)',
           width: 'fit-content',
         }}>
           <button
@@ -224,14 +230,14 @@ export default function Dashboard({ session }) {
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '9px 18px',
+              padding: '10px 20px',
               borderRadius: '12px',
               border: activeTab === 'zrkney' ? '1px solid rgba(124,58,237,0.4)' : '1px solid transparent',
-              background: activeTab === 'zrkney' ? 'linear-gradient(135deg, rgba(124,58,237,0.25), rgba(6,182,212,0.15))' : 'transparent',
-              color: activeTab === 'zrkney' ? '#fff' : 'rgba(255,255,255,0.45)',
+              background: activeTab === 'zrkney' ? 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(6,182,212,0.15))' : 'transparent',
+              color: activeTab === 'zrkney' ? '#fff' : 'rgba(255,255,255,0.5)',
               fontFamily: 'Cairo, sans-serif',
               fontWeight: '800',
-              fontSize: '0.88rem',
+              fontSize: '0.92rem',
               cursor: 'pointer',
               transition: 'all 0.25s',
             }}
@@ -244,14 +250,14 @@ export default function Dashboard({ session }) {
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '9px 18px',
+              padding: '10px 20px',
               borderRadius: '12px',
               border: activeTab === 'creavatex' ? '1px solid rgba(6,182,212,0.4)' : '1px solid transparent',
-              background: activeTab === 'creavatex' ? 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(124,58,237,0.2))' : 'transparent',
-              color: activeTab === 'creavatex' ? '#fff' : 'rgba(255,255,255,0.45)',
+              background: activeTab === 'creavatex' ? 'linear-gradient(135deg, rgba(6,182,212,0.25), rgba(124,58,237,0.2))' : 'transparent',
+              color: activeTab === 'creavatex' ? '#fff' : 'rgba(255,255,255,0.5)',
               fontFamily: 'Cairo, sans-serif',
               fontWeight: '800',
-              fontSize: '0.88rem',
+              fontSize: '0.92rem',
               cursor: 'pointer',
               transition: 'all 0.25s',
             }}
@@ -259,18 +265,36 @@ export default function Dashboard({ session }) {
             <span>🏢</span> شركة CREAVATEX
             <span style={{
               fontSize: '0.62rem',
-              background: 'rgba(6,182,212,0.18)',
+              background: 'rgba(6,182,212,0.2)',
               color: '#06b6d4',
               padding: '2px 8px',
               borderRadius: '8px',
-              border: '1px solid rgba(6,182,212,0.3)',
+              border: '1px solid rgba(6,182,212,0.35)',
               fontWeight: '900',
             }}>
-              خاص
+              مشاريع ومرابح
             </span>
           </button>
         </div>
-      )}
+
+        {/* User indicator badge */}
+        <div style={{
+          fontSize: '0.78rem',
+          color: 'rgba(255,255,255,0.4)',
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          background: 'rgba(255,255,255,0.02)',
+          padding: '6px 14px',
+          borderRadius: '10px',
+          border: '1px solid rgba(255,255,255,0.04)',
+        }}>
+          <span>👤</span>
+          <span>{profiles[session?.user?.id] || session?.user?.email || 'المستخدم'}</span>
+        </div>
+      </div>
+
 
       {/* ══ HEADER ══ */}
       <div style={{

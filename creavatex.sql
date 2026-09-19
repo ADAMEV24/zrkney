@@ -39,36 +39,36 @@ CREATE POLICY "قراءة مصروفات CREAVATEX"
 CREATE POLICY "إضافة مشروع — المدير فقط"
   ON public.creavatex_projects FOR INSERT TO authenticated
   WITH CHECK (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
 CREATE POLICY "تعديل مشروع — المدير فقط"
   ON public.creavatex_projects FOR UPDATE TO authenticated
   USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
 CREATE POLICY "إضافة مصروف — المدير فقط"
   ON public.creavatex_expenses FOR INSERT TO authenticated
   WITH CHECK (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
 CREATE POLICY "تعديل مصروف — المدير فقط"
   ON public.creavatex_expenses FOR UPDATE TO authenticated
   USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
 CREATE POLICY "حذف مصروف — المدير فقط"
   ON public.creavatex_expenses FOR DELETE TO authenticated
   USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
 CREATE POLICY "حذف مشروع — المدير فقط"
   ON public.creavatex_projects FOR DELETE TO authenticated
   USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) = 'hassandweedary@gmail.com'
+    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
   );
 
