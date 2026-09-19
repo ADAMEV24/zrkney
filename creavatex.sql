@@ -1,8 +1,8 @@
 -- ═══════════════════════════════════════════════════
---  CREAVATEX — جداول المشاريع والمصروفات
+--  CREAVATEX — جداول المشاريع والمصروفات وسياسات الأمان
 -- ═══════════════════════════════════════════════════
 
--- جدول المشاريع
+-- 1. جدول المشاريع
 CREATE TABLE IF NOT EXISTS public.creavatex_projects (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.creavatex_projects (
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
--- جدول المصروفات
+-- 2. جدول المصروفات
 CREATE TABLE IF NOT EXISTS public.creavatex_expenses (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id   UUID REFERENCES public.creavatex_projects(id) ON DELETE CASCADE NOT NULL,
@@ -24,51 +24,62 @@ CREATE TABLE IF NOT EXISTS public.creavatex_expenses (
   created_at   TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
 
--- تفعيل Row Level Security
+-- 3. تفعيل Row Level Security
 ALTER TABLE public.creavatex_projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.creavatex_expenses ENABLE ROW LEVEL SECURITY;
 
--- ─── سياسات القراءة (لأي مستخدم مسجّل) ───────────
+-- 4. دالة التحقق من صلاحيات المدير (SECURITY DEFINER لتجاوز قيود جدول users)
+CREATE OR REPLACE FUNCTION public.is_creavatex_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT lower(coalesce(auth.jwt() ->> 'email', (SELECT email FROM auth.users WHERE id = auth.uid()), '')) 
+         IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com');
+$$;
+
+-- 5. حذف السياسات القديمة إن وجدت لمنع أي خطأ تكرار (policy already exists)
+DROP POLICY IF EXISTS "قراءة مشاريع CREAVATEX" ON public.creavatex_projects;
+DROP POLICY IF EXISTS "إضافة مشروع — المدير فقط" ON public.creavatex_projects;
+DROP POLICY IF EXISTS "تعديل مشروع — المدير فقط" ON public.creavatex_projects;
+DROP POLICY IF EXISTS "حذف مشروع — المدير فقط" ON public.creavatex_projects;
+
+DROP POLICY IF EXISTS "قراءة مصروفات CREAVATEX" ON public.creavatex_expenses;
+DROP POLICY IF EXISTS "إضافة مصروف — المدير فقط" ON public.creavatex_expenses;
+DROP POLICY IF EXISTS "تعديل مصروف — المدير فقط" ON public.creavatex_expenses;
+DROP POLICY IF EXISTS "حذف مصروف — المدير فقط" ON public.creavatex_expenses;
+
+-- 6. سياسات جدول المشاريع (creavatex_projects)
 CREATE POLICY "قراءة مشاريع CREAVATEX"
-  ON public.creavatex_projects FOR SELECT TO authenticated USING (true);
+  ON public.creavatex_projects FOR SELECT TO authenticated
+  USING (true);
 
-CREATE POLICY "قراءة مصروفات CREAVATEX"
-  ON public.creavatex_expenses FOR SELECT TO authenticated USING (true);
-
--- ─── سياسات الكتابة (المدير فقط) ──────────────────
 CREATE POLICY "إضافة مشروع — المدير فقط"
   ON public.creavatex_projects FOR INSERT TO authenticated
-  WITH CHECK (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
+  WITH CHECK (public.is_creavatex_admin());
 
 CREATE POLICY "تعديل مشروع — المدير فقط"
   ON public.creavatex_projects FOR UPDATE TO authenticated
-  USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
-
-CREATE POLICY "إضافة مصروف — المدير فقط"
-  ON public.creavatex_expenses FOR INSERT TO authenticated
-  WITH CHECK (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
-
-CREATE POLICY "تعديل مصروف — المدير فقط"
-  ON public.creavatex_expenses FOR UPDATE TO authenticated
-  USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
-
-CREATE POLICY "حذف مصروف — المدير فقط"
-  ON public.creavatex_expenses FOR DELETE TO authenticated
-  USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
+  USING (public.is_creavatex_admin());
 
 CREATE POLICY "حذف مشروع — المدير فقط"
   ON public.creavatex_projects FOR DELETE TO authenticated
-  USING (
-    (SELECT email FROM auth.users WHERE id = auth.uid()) IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com')
-  );
+  USING (public.is_creavatex_admin());
 
+-- 7. سياسات جدول المصروفات (creavatex_expenses)
+CREATE POLICY "قراءة مصروفات CREAVATEX"
+  ON public.creavatex_expenses FOR SELECT TO authenticated
+  USING (true);
+
+CREATE POLICY "إضافة مصروف — المدير فقط"
+  ON public.creavatex_expenses FOR INSERT TO authenticated
+  WITH CHECK (public.is_creavatex_admin());
+
+CREATE POLICY "تعديل مصروف — المدير فقط"
+  ON public.creavatex_expenses FOR UPDATE TO authenticated
+  USING (public.is_creavatex_admin());
+
+CREATE POLICY "حذف مصروف — المدير فقط"
+  ON public.creavatex_expenses FOR DELETE TO authenticated
+  USING (public.is_creavatex_admin());
