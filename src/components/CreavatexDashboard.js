@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Plus, TrendingUp, FolderOpen, DollarSign, AlertTriangle, CheckCircle, ChevronDown, ChevronUp, X, Trash2 } from 'lucide-react';
 
 /* ── Constants ─────────────────────────────────────── */
-const ADMIN_EMAILS = ['hassandweedary@gmail.com', 'hilowpr35@gmail.com'];
+const ADMIN_EMAILS = ['adamevev101@gmail.com', 'hassandweedary@gmail.com', 'hilowpr35@gmail.com'];
 
 const PROJECT_COLORS = [
   '#7c3aed', '#06b6d4', '#f59e0b', '#10b981',

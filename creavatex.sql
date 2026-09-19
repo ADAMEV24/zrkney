@@ -36,7 +36,7 @@ SECURITY DEFINER
 STABLE
 AS $$
   SELECT lower(coalesce(auth.jwt() ->> 'email', (SELECT email FROM auth.users WHERE id = auth.uid()), '')) 
-         IN ('hassandweedary@gmail.com', 'hilowpr35@gmail.com');
+         IN ('adamevev101@gmail.com', 'hassandweedary@gmail.com', 'hilowpr35@gmail.com');
 $$;
 
 -- 5. حذف السياسات القديمة إن وجدت لمنع أي خطأ تكرار (policy already exists)
