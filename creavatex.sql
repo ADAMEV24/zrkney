@@ -14,15 +14,22 @@ CREATE TABLE IF NOT EXISTS public.creavatex_projects (
 
 -- 2. جدول المصروفات
 CREATE TABLE IF NOT EXISTS public.creavatex_expenses (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   UUID REFERENCES public.creavatex_projects(id) ON DELETE CASCADE NOT NULL,
-  name         TEXT NOT NULL,
-  amount       DECIMAL(14, 2) NOT NULL,
-  currency     TEXT NOT NULL DEFAULT 'USD',
-  expense_date DATE NOT NULL,
-  note         TEXT,
-  created_at   TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id    UUID REFERENCES public.creavatex_projects(id) ON DELETE CASCADE NOT NULL,
+  name          TEXT NOT NULL,
+  category      TEXT DEFAULT 'أجور ورواتب',
+  employee_name TEXT,
+  amount        DECIMAL(14, 2) NOT NULL,
+  currency      TEXT NOT NULL DEFAULT 'USD',
+  expense_date  DATE NOT NULL,
+  note          TEXT,
+  created_at    TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()) NOT NULL
 );
+
+-- تحديث الأعمدة في حال كان الجدول منشأ مسبقاً
+ALTER TABLE public.creavatex_expenses ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'أجور ورواتب';
+ALTER TABLE public.creavatex_expenses ADD COLUMN IF NOT EXISTS employee_name TEXT;
+
 
 -- 3. تفعيل Row Level Security
 ALTER TABLE public.creavatex_projects ENABLE ROW LEVEL SECURITY;
